@@ -1,0 +1,63 @@
+/* Conteneurs des cases : #id_qualifications (Member) et #id_required_quals (Session form) */
+#id_qualifications, #id_required_quals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Chaque option est rendue dans un <div> direct */
+#id_qualifications > div, #id_required_quals > div {
+  margin: 0;
+}
+
+/* Label sous forme de "pill" cliquable */
+#id_qualifications > div > label,
+#id_required_quals > div > label {
+  display: inline-flex;
+  align-items: center;       /* centre verticalement */
+  justify-content: center;   /* centre horizontalement le texte */
+  text-align: center; 
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #f9fafb;
+  color: #111827;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
+}
+
+/* masque visuel de l’input mais laisse l’accessibilité */
+#id_qualifications > div > label > input[type="checkbox"],
+#id_required_quals > div > label > input[type="checkbox"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  pointer-events: none !important;
+}
+
+/* focus clavier */
+#id_qualifications > div > label:focus-within,
+#id_required_quals > div > label:focus-within {
+  box-shadow: 0 0 0 3px rgba(59,130,246,.25);
+}
+
+/* état sélectionné (ajouté par JS sur le <div>) */
+#id_qualifications > div.is-checked > label,
+#id_required_quals > div.is-checked > label {
+  background: #10b981;          /* vert */
+  border-color: #059669;
+  color: #fff;
+}
+
+/* hover */
+#id_qualifications > div > label:hover,
+#id_required_quals > div > label:hover {
+  background: #f3f4f6;
+}
+#id_qualifications > div.is-checked > label:hover,
+#id_required_quals > div.is-checked > label:hover {
+  background: #059669;
+}

@@ -1,0 +1,14 @@
+<h1>Confirmer l’inscription</h1>
+<p>Session : {{ session.title_auto }}</p>
+{% if coach %}
+    <p>Coach : {{ coach }}</p>
+    <form method="post" action="{% url 'assign_do' category.code session.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="coach_id" value="{{ coach.id }}">
+        <button type="submit">Confirmer</button>
+        <a href="{% url 'public_sessions' category.code %}">Annuler</a>
+    </form>
+{% else %}
+    <p>Aucun coach sélectionné.</p>
+    <a href="{% url 'public_sessions' category.code %}">Retour</a>
+{% endif %}

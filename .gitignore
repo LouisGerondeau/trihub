@@ -1,0 +1,11 @@
+__pycache__/
+*__pycache__/
+*.pyc
+.env*
+*.sqlite3
+*.db
+pgdata/
+node_modules/
+.static/
+.media/
+reset_db.sh

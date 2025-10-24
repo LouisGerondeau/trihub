@@ -1,0 +1,119 @@
+<h1>Séances {{ category.label }}</h1>
+<style>
+.session-card{position:relative}
+.add-box{position:absolute; right:10px; top:10px; width:220px}
+.add-box input{width:100%}
+.suggest{position:absolute; right:0; left:0; background:#fff; border:1px solid #ccc; border-radius:6px; max-height:180px; overflow:auto; z-index:10}
+.suggest li{padding:6px 8px; cursor:pointer}
+.suggest li:hover{background:#f2f2f2}
+.filters { margin: 10px 0 16px; }
+.filters select, .filters input { margin-right: 8px; }
+.session-card {
+  border: 1px solid #ccc; border-radius: 8px;
+  padding: 10px 14px; margin: 8px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.session-missing { border-color: #d9534f; background-color: #f8d7da; }
+.session-header { font-weight: bold; margin-bottom: 4px; }
+.coach-chip{display:inline-block;padding:2px 8px;border:1px solid #ccc;border-radius:12px;margin:2px 6px 2px 0;font-size:.9em}
+.coach-chip a.remove{margin-left:6px;text-decoration:none;font-weight:bold}
+.suggest {
+  display: none;
+}
+.suggest.show {
+  display: block;
+}
+</style>
+<form class="filters" method="get">
+  <select name="loc">
+    <option value="">Tous lieux</option>
+    {% for l in locations %}
+      <option value="{{ l.id }}"
+              {% if params.loc == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="dow">
+    <option value="">Tous jours</option>
+    <option value="2" {% if params.dow == "2" %}selected{% endif %}>Lundi</option>
+    <option value="3" {% if params.dow == "3" %}selected{% endif %}>Mardi</option>
+    <option value="4" {% if params.dow == "4" %}selected{% endif %}>Mercredi</option>
+    <option value="5" {% if params.dow == "5" %}selected{% endif %}>Jeudi</option>
+    <option value="6" {% if params.dow == "6" %}selected{% endif %}>Vendredi</option>
+    <option value="7" {% if params.dow == "7" %}selected{% endif %}>Samedi</option>
+    <option value="1" {% if params.dow == "1" %}selected{% endif %}>Dimanche</option>
+  </select>
+  <input type="text"
+         name="coach"
+         placeholder="Coach inscrit…"
+         value="{{ params.coach|default_if_none:'' }}" />
+  <label>
+    <input type="checkbox"
+           name="needs"
+           value="1"
+           {% if params.needs == "1" %}checked{% endif %}>
+    Manque encadrants
+  </label>
+  <button type="submit">Filtrer</button>
+</form>
+{% for yw, sessions in weeks %}
+  {% with year=yw.0 week=yw.1 %}
+    <h2>Semaine {{ week }} ({{ year }})</h2>
+    {% for s in sessions %}
+      <div class="session-card {% if s.confirmed_cnt < s.min_coaches %}session-missing{% endif %}">
+        <div class="session-header">{{ s.title_auto }}</div>
+        <div>
+          Encadrants :
+          {% for a in s.assignments.all %}
+            {% if a.status == "confirmed" %}
+              <span class="coach-chip">{{ a.coach }}
+                <a class="remove"
+                   title="Retirer"
+                   href="{% url 'unassign_confirm' category.code s.id a.coach.id %}">×</a>
+              </span>
+            {% endif %}
+          {% empty %}Aucun
+          {% endfor %}
+        </div>
+        <div>Besoin : {{ s.confirmed_cnt }}/{{ s.min_coaches }}</div>
+        <div class="add-box"
+             data-session="{{ s.id }}"
+             data-category="{{ category.code }}">
+          <input type="text" class="coach-input" placeholder="Ajouter un encadrant…">
+          <ul class="suggest">
+          </ul>
+        </div>
+      </div>
+      <script>
+(function(){
+  const boxes = document.querySelectorAll('.add-box');
+  const debounce = (fn, d=200)=>{let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
+  boxes.forEach(box=>{
+    const input = box.querySelector('.coach-input');
+    const list  = box.querySelector('.suggest');
+    const cat   = box.dataset.category;
+    const sid   = box.dataset.session;
+    const search = debounce(async ()=>{
+      const q = input.value.trim();
+      if(!q){ list.style.display='none'; list.innerHTML=''; return; }
+      const res = await fetch(`/public/${cat}/coach_suggest/?q=`+encodeURIComponent(q));
+      const data = await res.json();
+      list.innerHTML = data.map(x=>`<li data-id="${x.id}">${x.name}</li>`).join('') || '<li style="pointer-events:none;">Aucun résultat</li>';
+      list.style.display='block';
+    }, 200);
+    input.addEventListener('input', search);
+    list.addEventListener('click', e=>{
+      const li = e.target.closest('li'); if(!li || !li.dataset.id) return;
+      const coachId = li.dataset.id;
+      window.location = `/public/${cat}/${sid}/assign/?coach_id=${coachId}`;
+    });
+    document.addEventListener('click', e=>{
+      if(!box.contains(e.target)){ list.style.display='none'; }
+    });
+  });
+})();
+      </script>
+    {% endfor %}
+  {% endwith %}
+{% empty %}
+  <p>Aucune séance à venir.</p>
+{% endfor %}

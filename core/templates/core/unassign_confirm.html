@@ -1,0 +1,10 @@
+{# core/templates/core/unassign_confirm.html #}
+<h1>Confirmer la désinscription</h1>
+<p>Session : {{ session.title_auto }}</p>
+<p>Coach : {{ coach }}</p>
+<form method="post"
+      action="{% url 'unassign_do' category.code session.id coach.id %}">
+  {% csrf_token %}
+  <button type="submit">Confirmer</button>
+  <a href="{% url 'public_sessions' category.code %}">Annuler</a>
+</form>
