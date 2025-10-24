@@ -88,6 +88,7 @@ DB_PORT=5432
 DB_NAME=trihub
 DB_USER=trihub
 DB_PASSWORD=trihub
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
 ### Démarrer
