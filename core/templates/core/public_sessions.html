@@ -1,29 +1,52 @@
 <h1>Séances {{ category.label }}</h1>
+
 <style>
-.session-card{position:relative}
-.add-box{position:absolute; right:10px; top:10px; width:220px}
-.add-box input{width:100%}
-.suggest{position:absolute; right:0; left:0; background:#fff; border:1px solid #ccc; border-radius:6px; max-height:180px; overflow:auto; z-index:10}
-.suggest li{padding:6px 8px; cursor:pointer}
-.suggest li:hover{background:#f2f2f2}
+/* Filtres */
 .filters { margin: 10px 0 16px; }
 .filters select, .filters input { margin-right: 8px; }
+
+/* Carte séance */
 .session-card {
   border: 1px solid #ccc; border-radius: 8px;
-  padding: 10px 14px; margin: 8px 0;
+  padding: 12px 14px; margin: 10px 0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 .session-missing { border-color: #d9534f; background-color: #f8d7da; }
-.session-header { font-weight: bold; margin-bottom: 4px; }
-.coach-chip{display:inline-block;padding:2px 8px;border:1px solid #ccc;border-radius:12px;margin:2px 6px 2px 0;font-size:.9em}
-.coach-chip a.remove{margin-left:6px;text-decoration:none;font-weight:bold}
-.suggest {
-  display: none;
+.session-header { font-weight: 600; margin: 0 0 8px 0; font-size: 1rem; line-height: 1.3; }
+
+/* Coach chips */
+.coach-chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 10px; border:1px solid #ccc; border-radius:14px;
+  margin:4px 6px 0 0; font-size:0.95rem;
 }
-.suggest.show {
-  display: block;
+.coach-chip a.remove{ text-decoration:none; font-weight:700; font-size:1.1rem; line-height:1; }
+
+/* Ajout encadrant (mobile-first) */
+.add-box{ margin-top:10px; }
+.coach-input{
+  width:100%; padding:10px; border:1px solid #bbb; border-radius:8px; font-size:1rem;
+}
+
+/* Suggestions (liste déroulante sous l’input) */
+.suggest{ position:relative; margin-top:6px; display:none; }
+.suggest.show{ display:block; }
+.suggest ul{
+  list-style:none; margin:0; padding:0; border:1px solid #ccc; border-radius:8px; background:#fff;
+  max-height:220px; overflow:auto;
+}
+.suggest li{ padding:10px 12px; cursor:pointer; }
+.suggest li:hover{ background:#f2f2f2; }
+
+/* Touch targets plus grands sur petits écrans */
+@media (max-width: 480px){
+  .session-card{ padding:14px; }
+  .session-header{ font-size:1.05rem; }
+  .coach-chip{ padding:8px 12px; font-size:1rem; }
+  .coach-chip a.remove{ font-size:1.25rem; }
 }
 </style>
+
 <form class="filters" method="get">
   <select name="loc">
     <option value="">Tous lieux</option>
@@ -32,6 +55,7 @@
               {% if params.loc == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>
     {% endfor %}
   </select>
+
   <select name="dow">
     <option value="">Tous jours</option>
     <option value="2" {% if params.dow == "2" %}selected{% endif %}>Lundi</option>
@@ -42,10 +66,12 @@
     <option value="7" {% if params.dow == "7" %}selected{% endif %}>Samedi</option>
     <option value="1" {% if params.dow == "1" %}selected{% endif %}>Dimanche</option>
   </select>
+
   <input type="text"
          name="coach"
          placeholder="Coach inscrit…"
          value="{{ params.coach|default_if_none:'' }}" />
+
   <label>
     <input type="checkbox"
            name="needs"
@@ -53,61 +79,77 @@
            {% if params.needs == "1" %}checked{% endif %}>
     Manque encadrants
   </label>
+
   <button type="submit">Filtrer</button>
 </form>
+
 {% for yw, sessions in weeks %}
   {% with year=yw.0 week=yw.1 %}
     <h2>Semaine {{ week }} ({{ year }})</h2>
     {% for s in sessions %}
       <div class="session-card {% if s.confirmed_cnt < s.min_coaches %}session-missing{% endif %}">
         <div class="session-header">{{ s.title_auto }}</div>
+
         <div>
           Encadrants :
           {% for a in s.assignments.all %}
             {% if a.status == "confirmed" %}
-              <span class="coach-chip">{{ a.coach }}
-                <a class="remove"
-                   title="Retirer"
+              <span class="coach-chip">
+                {{ a.coach }}
+                <a class="remove" title="Retirer"
                    href="{% url 'unassign_confirm' category.code s.id a.coach.id %}">×</a>
               </span>
             {% endif %}
-          {% empty %}Aucun
-          {% endfor %}
+          {% empty %}Aucun{% endfor %}
         </div>
+
         <div>Besoin : {{ s.confirmed_cnt }}/{{ s.min_coaches }}</div>
-        <div class="add-box"
-             data-session="{{ s.id }}"
-             data-category="{{ category.code }}">
+
+        <div class="add-box" data-session="{{ s.id }}" data-category="{{ category.code }}">
           <input type="text" class="coach-input" placeholder="Ajouter un encadrant…">
-          <ul class="suggest">
-          </ul>
+          <div class="suggest"><ul></ul></div>
         </div>
       </div>
+
       <script>
 (function(){
   const boxes = document.querySelectorAll('.add-box');
   const debounce = (fn, d=200)=>{let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
   boxes.forEach(box=>{
     const input = box.querySelector('.coach-input');
-    const list  = box.querySelector('.suggest');
-    const cat   = box.dataset.category;
-    const sid   = box.dataset.session;
+    const listWrap = box.querySelector('.suggest');
+    const list = listWrap.querySelector('ul');
+    const cat = box.dataset.category;
+    const sid = box.dataset.session;
+
     const search = debounce(async ()=>{
       const q = input.value.trim();
-      if(!q){ list.style.display='none'; list.innerHTML=''; return; }
+      if(!q){
+        listWrap.classList.remove('show');
+        list.innerHTML = '';
+        return;
+      }
       const res = await fetch(`/public/${cat}/coach_suggest/?q=`+encodeURIComponent(q));
       const data = await res.json();
-      list.innerHTML = data.map(x=>`<li data-id="${x.id}">${x.name}</li>`).join('') || '<li style="pointer-events:none;">Aucun résultat</li>';
-      list.style.display='block';
+      list.innerHTML = (data.length
+        ? data.map(x=>`<li data-id="${x.id}">${x.name}</li>`).join('')
+        : '<li style="pointer-events:none;">Aucun résultat</li>');
+      listWrap.classList.add('show');
     }, 200);
+
     input.addEventListener('input', search);
+
     list.addEventListener('click', e=>{
-      const li = e.target.closest('li'); if(!li || !li.dataset.id) return;
+      const li = e.target.closest('li');
+      if(!li || !li.dataset.id) return;
       const coachId = li.dataset.id;
       window.location = `/public/${cat}/${sid}/assign/?coach_id=${coachId}`;
     });
+
     document.addEventListener('click', e=>{
-      if(!box.contains(e.target)){ list.style.display='none'; }
+      if(!box.contains(e.target)){
+        listWrap.classList.remove('show');
+      }
     });
   });
 })();
