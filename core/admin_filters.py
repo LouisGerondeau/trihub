@@ -1,4 +1,6 @@
 # core/admin_filters.py
+from datetime import datetime
+
 from django.contrib import admin
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
@@ -98,7 +100,9 @@ class LockedCancelledFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         v = self.value()
         if v in (None, "active"):
-            return queryset.filter(is_locked=False, is_cancelled=False)
+            return queryset.filter(is_locked=False, is_cancelled=False).filter(
+                start_at__gte=datetime.now()
+            )
         if v == "all":
             return queryset
         return queryset
