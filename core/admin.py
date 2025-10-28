@@ -98,6 +98,13 @@ class SessionAdmin(admin.ModelAdmin):
     ordering = ["start_at"]
     inlines = [CoachAssignmentInline]
     actions = ["cancel_session"]
+    list_select_related = ("location", "category")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.prefetch_related("assignments__coach").select_related(
+            "category", "location"
+        )
 
     ## Change actions
 
