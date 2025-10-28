@@ -6,6 +6,7 @@ __pycache__/
 *.db
 pgdata/
 node_modules/
+/staticfiles/
 .static/
 .media/
 reset_db.sh
