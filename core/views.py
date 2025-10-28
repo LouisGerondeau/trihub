@@ -13,7 +13,7 @@ def public_sessions(request, category_code):
 
     qs = (
         Session.objects.filter(category=cat, is_cancelled=False, start_at__gte=now)
-        .select_related("location")
+        .select_related("location", "category")
         .prefetch_related("assignments__coach")
         .annotate(
             confirmed_cnt=Count(
@@ -22,6 +22,8 @@ def public_sessions(request, category_code):
         )
         .order_by("start_at")
     )
+
+    cat_coaches = Member.objects.filter(Q(is_head_coach=True) | Q(qualifications=cat))
 
     # --- Filtres ---
     loc_id = request.GET.get("loc")
@@ -49,9 +51,18 @@ def public_sessions(request, category_code):
 
     # regroupement par (année, semaine)
     weeks = {}
+    available_coaches = {}
     for s in qs:
+        assigned_ids = {a.coach_id for a in s.assignments.all()}  # type: ignore
+        print(assigned_ids)
+        available_coaches[s.pk] = [
+            {"id": c.pk, "name": f"{c.first_name} {c.last_name}"}
+            for c in cat_coaches
+            if c.pk not in assigned_ids
+        ]
         year, week, _ = s.start_at.isocalendar()
         weeks.setdefault((year, week), []).append(s)
+    print(available_coaches)
 
     return render(
         request,
@@ -61,23 +72,9 @@ def public_sessions(request, category_code):
             "weeks": sorted(weeks.items(), key=lambda x: x[0]),
             "locations": Location.objects.all().only("id", "name"),
             "params": request.GET,
+            "available_coaches": available_coaches,
         },
     )
-
-
-def coach_suggest(request, category_code):
-    cat = get_object_or_404(Category, code=category_code)
-    q = (request.GET.get("q") or "").strip()
-    qs = Member.objects.filter(is_active=True).filter(
-        Q(is_head_coach=True) | Q(qualifications=cat)
-    )
-    if q:
-        qs = qs.filter(Q(first_name__icontains=q) | Q(last_name__icontains=q))
-    data = [
-        {"id": m.pk, "name": f"{m.first_name} {m.last_name}"}
-        for m in qs.order_by("last_name", "first_name")[:20]
-    ]
-    return JsonResponse(data, safe=False)
 
 
 def assign_confirm(request, category_code, session_id):
