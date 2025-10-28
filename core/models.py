@@ -5,7 +5,7 @@ from core.utils import PARIS_TZ
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
+from django.utils import formats, timezone
 
 User = get_user_model()
 
@@ -88,12 +88,6 @@ class Recurrence(models.Model):
 
 class Session(models.Model):
 
-    CONSTRAINT_CHOICES = [
-        ("all", "Tous"),
-        ("youth", "Jeunes"),
-        ("adult", "Adultes"),
-        ("team", "Équipe D2/D3"),
-    ]
     category = models.ForeignKey(
         Category,
         verbose_name="Categorie",
@@ -114,9 +108,7 @@ class Session(models.Model):
     )
     notes = models.TextField(blank=True, null=True)
     min_coaches = models.PositiveIntegerField("Encadrants minimum", default=1)
-    constraint = models.CharField(
-        "Groupes", max_length=10, choices=CONSTRAINT_CHOICES, default="all"
-    )
+    group = models.CharField("Groupe", max_length=25, null=True)
     recurrence = models.ForeignKey(
         Recurrence,
         on_delete=models.PROTECT,  # empêche la suppression d'une récurrence liée
@@ -152,12 +144,15 @@ class Session(models.Model):
 
     @property
     def title_auto(self) -> str:
-        local_dt = self.start_at.astimezone(PARIS_TZ)
-        jour = local_dt.strftime("%a %-d %b %H:%M")
-        loc = self.location.name if self.location else None
-        if loc:
-            return f"{self.category} — {jour} — {loc}"
-        return f"{self.category} — {jour}"
+        dt = timezone.localtime(self.start_at)
+        jour = formats.date_format(dt, "D d M H:i", use_l10n=True)
+        parts = [str(self.category)]
+        if self.group:
+            parts.append(f"— {self.group}")
+        parts.append(f"— {jour}")
+        if self.location:
+            parts.append(f"— {self.location.name}")
+        return " ".join(parts)
 
     # -------------------------------------------------------
     # Validation
