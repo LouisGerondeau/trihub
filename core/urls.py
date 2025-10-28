@@ -26,11 +26,6 @@ urlpatterns = [
         views.assign_do,
         name="assign_do",
     ),
-    path(
-        "public/<slug:category_code>/coach_suggest/",
-        views.coach_suggest,
-        name="coach_suggest",
-    ),
 ]
 
 if settings.DEBUG:
