@@ -97,7 +97,7 @@ class Session(models.Model):
         blank=True,  # temporaire si tu as déjà des données
     )
     start_at = models.DateTimeField("Jour et Horaire")
-    duration_min = models.PositiveIntegerField("Durée", default=60)
+    duration_min = models.PositiveIntegerField("Durée en minute", default=60)
     location = models.ForeignKey(
         Location,
         verbose_name="Lieu",

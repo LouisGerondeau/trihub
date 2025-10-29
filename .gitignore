@@ -11,3 +11,4 @@ node_modules/
 .media/
 reset_db.sh
 *.ipynb*
+*sco.csv

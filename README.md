@@ -134,18 +134,14 @@ Le projet choisit automatiquement :
 
 ---
 
-## 🧰 Commandes utiles
+## 🧪 Peupler la base avec des données fictives
+
+Des dummy datas sont disponibles dans le dossier [`core/fixtures`](core/fixtures), sous forme de fichiers CSV. Vous pouvez reprendre le format de ces CSV pour importer vos propres données.
+
+Pour les importer en base, utilisez la commande suivante :
 
 ```bash
-# Logs containers
-docker compose logs -f web
-docker compose logs -f db
-
-# Arrêter et supprimer
-docker compose down
-
-# (optionnel) supprimer le volume de données Postgres
-docker volume rm trihub_pgdata
+python manage.py import_csvs start_date end_date
 ```
 
----
+avec start_date et end_date les dates respectives de début et fin de saison sous forme dd/mm/yyyy

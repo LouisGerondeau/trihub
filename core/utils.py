@@ -11,12 +11,61 @@ PARIS_TZ = zoneinfo.ZoneInfo("Europe/Paris")
 # Fonctions utilitaires de base
 # -----------------------------------------------------------
 
+JOUR_FR_TO_INT = {
+    "lun": 1,
+    "mar": 2,
+    "mer": 3,
+    "jeu": 4,
+    "ven": 5,
+    "sam": 6,
+    "dim": 7,
+}
+
+REC_TYPE_TO_INT = {"e": 0, "u": 1}
+
+
+def split_name(name: str) -> dict:
+    return {"first_name": name.split(" ", 1)[0], "last_name": name.split(" ", 1)[1]}
+
 
 def to_paris(dt: datetime) -> datetime:
     """Convertit un datetime vers l'heure locale Paris (heure stable)."""
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=zoneinfo.ZoneInfo("UTC"))
     return dt.astimezone(PARIS_TZ)
+
+
+def find_next_day(weekday: str, start_date: date, weektype: str):
+    start = start_date
+    target_wd = JOUR_FR_TO_INT[weekday.lower()[:3]]
+    rec_type = REC_TYPE_TO_INT.get(weektype)
+
+    for offset in range(21):
+        candidate = start + timedelta(days=offset)
+        iso = candidate.isocalendar()
+        if iso.weekday != target_wd:
+            continue
+        if rec_type is None or iso.week % 2 == rec_type:
+            return candidate
+
+    raise ValueError(f"Aucune date trouvée pour {weekday=} {start_date=} {weektype=}")
+
+
+def combine_date_time(date_obj, time_str):
+    time_str = time_str.strip().lower()
+
+    if "h" in time_str:
+        parts = time_str.split("h")
+        hour = int(parts[0])
+        minute = int(parts[1]) if len(parts) > 1 and parts[1] else 0
+    else:
+        raise ValueError(
+            f"Format horaire invalide : {time_str}. Un h doit etre utilisé. Exemple 7h30 ou 12h ou 08h15."
+        )
+
+    return datetime.combine(
+        date_obj, datetime.min.replace(hour=hour, minute=minute).time()
+    ).astimezone(PARIS_TZ)
 
 
 def next_july_31(from_date: date | None = None) -> date:
