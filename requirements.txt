@@ -1,5 +1,5 @@
 whitenoise==6.11.0
 django-debug-toolbar==6.0.0
 Django==5.2.7
-psycopg-binary==3.2.12
+psycopg2-binary>=2.9,<3
 pandas==2.3.3
