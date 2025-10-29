@@ -10,3 +10,4 @@ node_modules/
 .static/
 .media/
 reset_db.sh
+*.ipynb*
