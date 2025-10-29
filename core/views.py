@@ -53,8 +53,9 @@ def public_sessions(request, category_code):
     weeks = {}
     available_coaches = {}
     for s in qs:
-        assigned_ids = {a.coach_id for a in s.assignments.all()}  # type: ignore
-        print(assigned_ids)
+        assigned_ids = {
+            a.coach_id for a in s.assignments.all() if a.status == "confirmed"  # type: ignore
+        }
         available_coaches[s.pk] = [
             {"id": c.pk, "name": f"{c.first_name} {c.last_name}"}
             for c in cat_coaches
@@ -62,7 +63,6 @@ def public_sessions(request, category_code):
         ]
         year, week, _ = s.start_at.isocalendar()
         weeks.setdefault((year, week), []).append(s)
-    print(available_coaches)
 
     return render(
         request,
@@ -106,9 +106,10 @@ def assign_do(request, category_code, session_id):
     coach = get_object_or_404(Member, pk=coach_id)
     ok = coach.is_head_coach or coach.qualifications.filter(pk=cat.pk).exists()
     if ok:
-        CoachAssignment.objects.get_or_create(
-            session=ses, coach=coach, defaults={"status": "confirmed"}
-        )
+        ca, i = CoachAssignment.objects.get_or_create(session=ses, coach=coach)
+        print(ca, i)
+        ca.status = "confirmed"
+        ca.save()
     return redirect("public_sessions", category_code=category_code)
 
 
