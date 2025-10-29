@@ -1,7 +1,6 @@
 # core/utils.py
 
 import zoneinfo
-from collections.abc import Iterable
 from datetime import date, datetime, timedelta
 
 BASE_TYPES = [str, int, float, bool, type(None)]
