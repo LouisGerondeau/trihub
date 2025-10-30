@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
 {% block content %}
-  <h1>Séances {{ category.label }}</h1>
+  <h1>{{ page_title }}</h1>
   <style>
 /* Filtres */
 .filters { margin: 10px 0 16px; }
@@ -92,16 +92,14 @@
                   {{ a.coach }}
                   <a class="remove"
                      title="Retirer"
-                     href="{% url 'unassign_confirm' category.code s.id a.coach.id %}">×</a>
+                     href="{% url 'unassign_confirm' %}?session_id={{ s.id }}&coach_id={{ a.coach.id }}&origin={{ request.path|urlencode }}">×</a>
                 </span>
               {% endif %}
             {% empty %}Aucun
             {% endfor %}
           </div>
           <div>Besoin : {{ s.confirmed_cnt }}/{{ s.min_coaches }}</div>
-          <div class="add-box"
-               data-session="{{ s.id }}"
-               data-category="{{ category.code }}">
+          <div class="add-box" data-session="{{ s.id }}">
             <input type="text" class="coach-input" placeholder="Ajouter un encadrant…">
             <div class="suggest">
               <ul>

@@ -2,13 +2,15 @@
 <p>Session : {{ session.title_auto }}</p>
 {% if coach %}
     <p>Coach : {{ coach }}</p>
-    <form method="post" action="{% url 'assign_do' category.code session.id %}">
+    <form method="post" action="{% url 'assign_do' %}">
         {% csrf_token %}
+        <input type="hidden" name="session_id" value="{{ session.id }}">
         <input type="hidden" name="coach_id" value="{{ coach.id }}">
+        <input type="hidden" name="origin" value="{{ origin }}">
         <button type="submit">Confirmer</button>
-        <a href="{% url 'public_sessions' category.code %}">Annuler</a>
+        <a href="{{ origin }}">Annuler</a>
     </form>
 {% else %}
     <p>Aucun coach sélectionné.</p>
-    <a href="{% url 'public_sessions' category.code %}">Retour</a>
+    <a href="{{ origin }}">Retour</a>
 {% endif %}

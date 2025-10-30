@@ -63,7 +63,8 @@
       const li = e.target.closest('li');
       if (!li?.dataset.id) return;
       const coachId = li.dataset.id;
-      window.location = `/public/${cat}/${sid}/assign/?coach_id=${coachId}`;
+      const origin = window.location.pathname + window.location.search;
+      window.location = `/public/assign/confirm/?coach_id=${coachId}&session_id=${sid}&origin=${encodeURIComponent(origin)}`;
     });
 
     document.addEventListener('click', e => {

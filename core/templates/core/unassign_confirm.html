@@ -2,9 +2,11 @@
 <h1>Confirmer la désinscription</h1>
 <p>Session : {{ session.title_auto }}</p>
 <p>Coach : {{ coach }}</p>
-<form method="post"
-      action="{% url 'unassign_do' category.code session.id coach.id %}">
+<form method="post" action="{% url 'unassign_do' %}">
   {% csrf_token %}
+  <input type="hidden" name="session_id" value="{{ session.id }}">
+  <input type="hidden" name="coach_id" value="{{ coach.id }}">
+  <input type="hidden" name="origin" value="{{ origin }}">
   <button type="submit">Confirmer</button>
-  <a href="{% url 'public_sessions' category.code %}">Annuler</a>
+  <a href="{{ origin }}">Annuler</a>
 </form>
