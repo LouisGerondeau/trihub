@@ -1,7 +1,8 @@
 # pyright: reportAttributeAccessIssue=false
+import unicodedata
 import uuid
 
-from core.utils import PARIS_TZ
+from core.utils import PARIS_TZ, normalize_string
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -50,7 +51,7 @@ class Member(models.Model):
     is_head_coach = models.BooleanField("Coach Principal", default=False)
 
     qualifications = models.ManyToManyField(
-        Category, verbose_name="Peut encadrer", blank=True
+        Category, verbose_name="Peut encadrer", blank=True, related_name="coaches"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -59,6 +60,10 @@ class Member(models.Model):
         ordering = ["last_name", "first_name"]
         verbose_name = "Licencié"
         verbose_name_plural = "Licenciés"
+
+    @property
+    def slug(self) -> str:
+        return normalize_string(self.first_name + self.last_name).lower()
 
     def __str__(self):
         return self.first_name + " " + self.last_name
