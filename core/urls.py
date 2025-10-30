@@ -5,24 +5,28 @@ from django.urls import include, path
 from . import views
 
 urlpatterns = [
-    path("public/<slug:category_code>/", views.public_sessions, name="public_sessions"),
     path(
-        "public/<slug:category_code>/<int:session_id>/unassign/<int:coach_id>/",
+        "public/category/<slug:category_code>/",
+        views.public_sessions_by_category,
+        name="public_sessions_by_category",
+    ),
+    path(
+        "public/unassign/confirm/",
         views.unassign_confirm,
         name="unassign_confirm",
     ),
     path(
-        "public/<slug:category_code>/<int:session_id>/unassign/<int:coach_id>/confirm/",
+        "public/unassign/do/",
         views.unassign_do,
         name="unassign_do",
     ),
     path(
-        "public/<slug:category_code>/<int:session_id>/assign/",
+        "public/assign/confirm/",
         views.assign_confirm,
         name="assign_confirm",
     ),
     path(
-        "public/<slug:category_code>/<int:session_id>/assign/confirm/",
+        "public/assign/do/",
         views.assign_do,
         name="assign_do",
     ),
