@@ -1,5 +1,4 @@
 # pyright: reportAttributeAccessIssue=false
-import unicodedata
 import uuid
 
 from core.utils import PARIS_TZ, normalize_string
