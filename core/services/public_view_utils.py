@@ -48,9 +48,7 @@ def get_public_sessions(category_code: str, params: dict):
 
 def get_cat_coaches(category_code: str):
     if category_code == "all":
-        return Member.objects.filter(is_head_coach=True).prefetch_related(
-            "qualifications"
-        )
+        return Member.objects.all().prefetch_related("qualifications")
 
     try:
         cat = Category.objects.get(code=category_code)
@@ -64,7 +62,7 @@ def get_cat_coaches(category_code: str):
 
 def build_available_coaches(qs, cat_coaches):
     available_coaches = {}
-
+    qualif_map = {c.pk: {q.pk for q in c.qualifications.all()} for c in cat_coaches}
     for s in qs:
         assigned_ids = {
             a.coach_id for a in s.assignments.all() if a.status == "confirmed"
@@ -74,10 +72,7 @@ def build_available_coaches(qs, cat_coaches):
             {"id": c.pk, "name": f"{c.first_name} {c.last_name}"}
             for c in cat_coaches
             if c.pk not in assigned_ids
-            and (
-                s.category is None
-                or s.category.pk in [q.pk for q in c.qualifications.all()]
-            )
+            and (s.category is None or s.category.pk in qualif_map[c.pk])
         ]
 
     return available_coaches

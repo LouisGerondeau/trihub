@@ -4,6 +4,7 @@ from core.services.public_view_utils import (
     get_cat_coaches,
     get_public_sessions,
 )
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Count, F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -26,6 +27,17 @@ def public_sessions_by_category(request, category_code):
     }
 
     qs = get_public_sessions(category_code, filters)
+    # Pagination : 100 séances par page
+    paginator = Paginator(qs, 100)
+    page = request.GET.get("page")
+
+    try:
+        sessions_page = paginator.page(page)
+    except PageNotAnInteger:
+        sessions_page = paginator.page(1)
+    except EmptyPage:
+        sessions_page = paginator.page(paginator.num_pages)
+
     if category_code == "all":
         page_title = "Toutes les séances"
     else:
@@ -37,7 +49,7 @@ def public_sessions_by_category(request, category_code):
     # regroupement par (année, semaine)
     weeks = {}
     available_coaches = build_available_coaches(qs, cat_coaches)
-    for s in qs:
+    for s in sessions_page:
         year, week, _ = s.start_at.isocalendar()
         weeks.setdefault((year, week), []).append(s)
 
@@ -47,6 +59,8 @@ def public_sessions_by_category(request, category_code):
         {
             "origin": request.get_full_path(),
             "weeks": sorted(weeks.items(), key=lambda x: x[0]),
+            "page_obj": sessions_page,  # 👈 important
+            "paginator": paginator,
             "locations": Location.objects.all().only("id", "name"),
             "params": request.GET,
             "available_coaches": available_coaches,
@@ -82,9 +96,12 @@ def assign_do(request):
     ok = coach.is_head_coach or (
         cat and coach.qualifications.filter(pk=cat.pk).exists()
     )
+    # si coach non qualifié, on dit que c'est pas possible
     if not ok:
-        return redirect(
-            origin
+        return render(
+            request,
+            "core/assign_issue.html",
+            {"session": ses, "coach": coach, "origin": origin},
         )  # implement later : redirect to special page for more explanation
     if ok:
         ca, i = CoachAssignment.objects.get_or_create(session=ses, coach=coach)

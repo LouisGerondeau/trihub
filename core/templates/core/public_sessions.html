@@ -116,4 +116,9 @@
   {{ available_coaches|json_script:"coachesData" }}
   {% load static %}
   <script src="{% static 'display_coach.js' %}"></script>
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">← Précédent</a>{% endif %}
+    Page {{ page_obj.number }} / {{ paginator.num_pages }}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Suivant →</a>{% endif %}
+  </div>
 {% endblock content %}

@@ -176,6 +176,12 @@ class Session(models.Model):
         verbose_name = "Séance"
         verbose_name_plural = "Séances"
         ordering = ["-start_at"]
+        indexes = [
+            models.Index(fields=["start_at"]),  #  tri chronologique
+            models.Index(fields=["is_cancelled"]),  # filtres is_cancelled=False
+            models.Index(fields=["category"]),  # filtrage par cat
+            models.Index(fields=["location"]),  # filtrage par lieu (loc_id=)
+        ]
 
     def save(self, *args, **kwargs):
         self.week_iso = self.start_at.astimezone(PARIS_TZ).isocalendar()[1]
