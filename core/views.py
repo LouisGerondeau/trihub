@@ -28,7 +28,7 @@ def public_sessions_by_category(request, category_code):
 
     qs = get_public_sessions(category_code, filters)
     # Pagination : 100 séances par page
-    paginator = Paginator(qs, 100)
+    paginator = Paginator(qs, 50)
     page = request.GET.get("page")
 
     try:
@@ -48,7 +48,7 @@ def public_sessions_by_category(request, category_code):
 
     # regroupement par (année, semaine)
     weeks = {}
-    available_coaches = build_available_coaches(qs, cat_coaches)
+    available_coaches = build_available_coaches(sessions_page, cat_coaches)
     for s in sessions_page:
         year, week, _ = s.start_at.isocalendar()
         weeks.setdefault((year, week), []).append(s)
