@@ -1,5 +1,6 @@
 # core/utils.py
 
+import unicodedata
 import zoneinfo
 from datetime import date, datetime, timedelta
 
@@ -22,6 +23,12 @@ JOUR_FR_TO_INT = {
 }
 
 REC_TYPE_TO_INT = {"e": 0, "u": 1}
+
+
+def normalize_string(s: str):
+    n = unicodedata.normalize("NFKD", s)
+    res = "".join([c for c in n if not unicodedata.combining(c)])
+    return res
 
 
 def split_name(name: str) -> dict:
