@@ -1,14 +1,25 @@
 {% extends "core/base.html" %}
 {% block content %}
-    <h1>Séances par catégories</h1>
-    <ul>
-        <li>
-            <a href="{% url 'public_sessions_by_category' 'all' %}">Toutes les séances</a>
-        </li>
-        {% for cat in cats %}
-            <li>
-                <a href="{% url 'public_sessions_by_category' cat.code %}">{{ cat.label }}</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <style>
+/* Carte séance */
+.maintitle {
+  border: 1px solid #e961c7ff; border-radius: 8px; background-color: #ed488a6b;
+  padding: 12px 14px; margin: 10px 0;font-family: Calibri, sans-serif;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.categories{border: 1px solid #131213ff; border-radius: 8px; background-color: #9790956b;
+  padding: 12px 14px; margin: 10px 0; font-family: Calibri, sans-serif;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
+    </style>
+    <h1 class="maintitle">Séances par catégories</h1>
+    <div class="categories"
+         href="{% url 'public_sessions_by_category' 'all' %}">
+        <a href="{% url 'public_sessions_by_category' 'all' %}">Toutes les séances</a>
+    </div>
+    {% for cat in cats %}
+        <div class="categories"
+             href="{% url 'public_sessions_by_category' cat.code %}">
+            <a href="{% url 'public_sessions_by_category' cat.code %}">{{ cat.label }}</a>
+        </div>
+    {% endfor %}
 {% endblock content %}
