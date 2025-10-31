@@ -65,8 +65,9 @@ def public_sessions_by_coach(request, coach_slug):
         sessions_page = paginator.page(paginator.num_pages)
     weeks = {}
     for s in sessions_page:
+        cids = [a.coach_id for a in s.assignments.all() if a.status == "confirmed"]
         year, week, _ = s.start_at.isocalendar()
-        weeks.setdefault((year, week), []).append([s, coach in s.coach.all()])
+        weeks.setdefault((year, week), []).append([s, coach.pk in cids])
     return render(
         request,
         "core/public_sessions_by_coach.html",
