@@ -11,6 +11,11 @@ urlpatterns = [
         name="public_sessions_by_category",
     ),
     path(
+        "public/coach/<slug:coach_slug>/",
+        views.public_sessions_by_coach,
+        name="coach_page",
+    ),
+    path(
         "public/unassign/confirm/",
         views.unassign_confirm,
         name="unassign_confirm",
@@ -30,7 +35,9 @@ urlpatterns = [
         views.assign_do,
         name="assign_do",
     ),
+    path("public/", views.public_homepage, name="public_homepage"),
 ]
+
 
 if settings.DEBUG:
     import debug_toolbar

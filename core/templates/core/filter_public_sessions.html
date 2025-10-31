@@ -1,0 +1,37 @@
+<style>
+/* Filtres */
+.filters { margin: 10px 0 16px; font-weight: 300;font-size: 1.1rem}
+.filters select, .filters input { margin-right: 8px; font-weight: 300;font-size: 0.95rem}
+.top_filter { margin-left: 8px;font-weight: 600;font-size: 0.95rem }
+</style>
+<form class="filters" method="get">
+    <select name="loc">
+        <option value="">Tous lieux</option>
+        {% for l in locations %}
+            <option value="{{ l.id }}"
+                    {% if params.loc == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="dow">
+        <option value="">Tous jours</option>
+        <option value="2" {% if params.dow == "2" %}selected{% endif %}>Lundi</option>
+        <option value="3" {% if params.dow == "3" %}selected{% endif %}>Mardi</option>
+        <option value="4" {% if params.dow == "4" %}selected{% endif %}>Mercredi</option>
+        <option value="5" {% if params.dow == "5" %}selected{% endif %}>Jeudi</option>
+        <option value="6" {% if params.dow == "6" %}selected{% endif %}>Vendredi</option>
+        <option value="7" {% if params.dow == "7" %}selected{% endif %}>Samedi</option>
+        <option value="1" {% if params.dow == "1" %}selected{% endif %}>Dimanche</option>
+    </select>
+    <input type="text"
+           name="coach"
+           placeholder="Encadrant inscrit…"
+           value="{{ params.coach|default_if_none:'' }}" />
+    <label>
+        <input type="checkbox"
+               name="needs"
+               value="1"
+               {% if params.needs == "1" %}checked{% endif %}>
+        Encadrants insuffisants
+    </label>
+    <button class="top_filter" type="submit">Filtrer</button>
+</form>

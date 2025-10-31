@@ -1,19 +1,85 @@
 # core/views.py
 from core.services.public_view_utils import (
+    add_filters_to_qs,
     build_available_coaches,
     get_cat_coaches,
     get_public_sessions,
 )
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Count, F, Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .models import Category, CoachAssignment, Location, Member, Session
 
 
-def coach_page(request, coach_slug):
-    qs = Member.objects.all()
+def public_homepage(request):
+    cats = Category.objects.all()
+    return render(
+        request,
+        "core/homepage.html",
+        {"cats": cats},
+    )
+
+
+def public_sessions_by_coach(request, coach_slug):
+    filters = {
+        "loc_id": request.GET.get("loc"),
+        "dow": request.GET.get("dow"),
+        "coach_q": request.GET.get("coach"),
+        "needs": request.GET.get("needs") == "1",  # bool
+    }
+    ms = Member.objects.all()
+    coach = next((m for m in ms if m.slug == coach_slug), None)
+    if not coach:
+        raise Http404("Coach non trouvé")
+    if coach.is_head_coach:
+        categories = Category.objects.all()
+    else:
+        categories = Category.objects.filter(Q(coaches=coach))
+    now = timezone.now()
+    qs = (
+        Session.objects.filter(
+            category__in=categories, is_cancelled=False, start_at__gte=now
+        )
+        .select_related("location", "category")
+        .prefetch_related("assignments__coach", "coach")
+        .annotate(
+            confirmed_cnt=Count(
+                "assignments", filter=Q(assignments__status="confirmed")
+            )
+        )
+        .order_by("start_at", "pk")
+    )
+    qs = add_filters_to_qs(qs, filters)
+    # Pagination : 50 séances par page
+    paginator = Paginator(qs, 50)
+    page = request.GET.get("page")
+
+    try:
+        sessions_page = paginator.page(page)
+    except PageNotAnInteger:
+        sessions_page = paginator.page(1)
+    except EmptyPage:
+        sessions_page = paginator.page(paginator.num_pages)
+    weeks = {}
+    for s in sessions_page:
+        year, week, _ = s.start_at.isocalendar()
+        weeks.setdefault((year, week), []).append([s, coach in s.coach.all()])
+    return render(
+        request,
+        "core/public_sessions_by_coach.html",
+        {
+            "origin": request.get_full_path(),
+            "coach": coach,
+            "weeks": sorted(weeks.items(), key=lambda x: x[0]),
+            "page_obj": sessions_page,
+            "paginator": paginator,
+            "locations": Location.objects.all().only("id", "name"),
+            "params": request.GET,
+        },
+    )
 
 
 def public_sessions_by_category(request, category_code):
@@ -27,7 +93,7 @@ def public_sessions_by_category(request, category_code):
     }
 
     qs = get_public_sessions(category_code, filters)
-    # Pagination : 100 séances par page
+    # Pagination : 50 séances par page
     paginator = Paginator(qs, 50)
     page = request.GET.get("page")
 
@@ -55,7 +121,7 @@ def public_sessions_by_category(request, category_code):
 
     return render(
         request,
-        "core/public_sessions.html",
+        "core/public_sessions_by_cat.html",
         {
             "origin": request.get_full_path(),
             "weeks": sorted(weeks.items(), key=lambda x: x[0]),
@@ -102,10 +168,9 @@ def assign_do(request):
             request,
             "core/assign_issue.html",
             {"session": ses, "coach": coach, "origin": origin},
-        )  # implement later : redirect to special page for more explanation
+        )
     if ok:
         ca, i = CoachAssignment.objects.get_or_create(session=ses, coach=coach)
-        print(ca, i)
         ca.status = "confirmed"
         ca.save()
     return redirect(origin)

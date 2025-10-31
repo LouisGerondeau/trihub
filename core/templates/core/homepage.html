@@ -1,0 +1,14 @@
+{% extends "core/base.html" %}
+{% block content %}
+    <h1>Séances par catégories</h1>
+    <ul>
+        <li>
+            <a href="{% url 'public_sessions_by_category' 'all' %}">Toutes les séances</a>
+        </li>
+        {% for cat in cats %}
+            <li>
+                <a href="{% url 'public_sessions_by_category' cat.code %}">{{ cat.label }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock content %}
