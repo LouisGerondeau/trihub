@@ -62,7 +62,9 @@ class Member(models.Model):
 
     @property
     def slug(self) -> str:
-        return normalize_string(self.first_name + self.last_name).lower()
+        return (
+            normalize_string(self.first_name + self.last_name).lower().replace(" ", "")
+        )
 
     def __str__(self):
         return self.first_name + " " + self.last_name
