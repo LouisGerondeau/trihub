@@ -1,15 +1,15 @@
 # TriHub — Gestion de séances (Django)
 
-Application Django pour gérer les séances d’un club de triathlon (natation, vélo, course…), avec :
+Application Django pour gérer les séances d’un club de triathlon et (natation, vélo, course…), avec :
 
 - Modèle unique `Session` (ponctuelle ou récurrente)
-- Encadrants (coachs) avec éligibilité par qualifications
+- Encadrants `Member` avec éligibilité par qualifications
 - Interface publique (URL par catégorie) : liste, filtres, inscription/désinscription encadrants
 - Interface admin Django : création, récurrence, validations
 
 ## ⚙️ Stack
 
-- Python 3.12 · Django 5.x
+- Python 3.12 · Django 5.2.7
 - Base de données : SQLite (développement) / PostgreSQL (production)
 - Timezone : Europe/Paris
 - Optionnel : Docker + docker-compose (Postgres local)
@@ -80,7 +80,7 @@ python manage.py runserver
 Exemple de `.env.dev` :
 
 ```env
-DJANGO_DEBUG=1
+DJANGO_DEBUG=True
 DJANGO_SECRET_KEY=changeme-local
 DB_ENGINE=postgres
 DB_HOST=db
@@ -123,7 +123,10 @@ Le projet choisit automatiquement :
 
 ## 🌐 Endpoints publics
 
-`/public/<category_code>/` : séances futures de la catégorie (tri chronologique, regroupement par semaine ISO)  
+`/public/`: Page d'accueil redirigeant vers les autres pages
+`/public/category/<category_code>/` ou `/public/category/all/`: séances futures de la catégorie ou de toutes les catégories (tri chronologique, regroupement par semaine ISO)
+`/public/coach/<coachslug>/`: séances disponible pour un coach en particulier
+
 **Filtres disponibles :**
 
 - `?loc=` : lieu
