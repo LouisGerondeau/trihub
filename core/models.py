@@ -22,8 +22,8 @@ class Category(models.Model):
         return self.label
 
     class Meta:
-        verbose_name = "Catégorie"
-        verbose_name_plural = "Catégories"
+        verbose_name = "Discipline d'entrainement"
+        verbose_name_plural = "Disciplines d'entrainement"
 
 
 class Location(models.Model):
@@ -216,38 +216,3 @@ class CoachAssignment(models.Model):
 
     def __str__(self):
         return f"{self.coach} → {self.session} ({self.status})"
-
-
-# class AuditLog(models.Model):
-#     ACTION_CHOICES = [
-#         ("create_session", "Création séance"),
-#         ("update_session", "Mise à jour séance"),
-#         ("cancel_session", "Annulation séance"),
-#         ("reactivate_session", "Réactivation séance"),
-#         ("assign_coach", "Assignation encadrant"),
-#         ("unassign_coach", "Désinscription encadrant"),
-#         ("generate_recurrences", "Génération récurrence"),
-#         ("bulk_update", "Modification en masse"),
-#     ]
-
-#     when = models.DateTimeField(auto_now_add=True)
-#     actor_user = models.ForeignKey(
-#         User, on_delete=models.SET_NULL, blank=True, null=True, related_name="logs"
-#     )
-#     actor_public_name = models.CharField(max_length=100, blank=True, null=True)
-#     ip = models.GenericIPAddressField(blank=True, null=True)
-#     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
-#     session = models.ForeignKey(
-#         Session, on_delete=models.SET_NULL, blank=True, null=True, related_name="logs"
-#     )
-#     coach = models.ForeignKey(
-#         Member, on_delete=models.SET_NULL, blank=True, null=True, related_name="logs"
-#     )
-#     details = models.JSONField(blank=True, null=True)
-#     by_public = models.BooleanField(default=False)
-
-#     class Meta:
-#         ordering = ["-when"]
-
-#     def __str__(self):
-#         return f"[{self.when:%Y-%m-%d %H:%M}] {self.action}"

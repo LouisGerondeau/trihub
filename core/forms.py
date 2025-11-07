@@ -1,8 +1,6 @@
-# core/forms.py
-
-
 from django import forms
 from django.core.exceptions import ValidationError
+from django.forms import CheckboxSelectMultiple
 from django.utils import timezone
 
 from .models import Member, Session
@@ -159,3 +157,12 @@ class CoachSelectForm(forms.Form):
         queryset=Member.objects.none(),  # important : ModelChoiceField
         label="Encadrant",
     )
+
+
+class MemberAdminForm(forms.ModelForm):
+    class Meta:
+        model = Member
+        fields = "__all__"
+        widgets = {
+            "qualifications": CheckboxSelectMultiple,
+        }

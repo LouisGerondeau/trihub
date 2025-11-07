@@ -1,13 +1,6 @@
-from ast import Delete
 from copy import deepcopy
 
-from django import forms
 from django.contrib import admin, messages
-from django.core.exceptions import MultipleObjectsReturned
-from django.db import transaction
-from django.forms import CheckboxSelectMultiple
-from django.shortcuts import redirect
-from django.urls import path, reverse
 from django.utils.translation import ngettext
 
 from .admin_filters import (
@@ -17,14 +10,13 @@ from .admin_filters import (
     MemberFilter,
     WeekIsoFilter,
 )
-from .forms import SessionAdminForm
+from .forms import MemberAdminForm, SessionAdminForm
 from .models import Category, CoachAssignment, Location, Member, Recurrence, Session
 from .services.recurrence import (
     generate_series,
     propagate_coach_assignments,
     propagate_form_fields,
 )
-from .utils import compare_model_instance
 
 ### INLINES ###
 
@@ -36,15 +28,6 @@ class CoachAssignmentInline(admin.StackedInline):
     verbose_name = "Encadrant assigné"
     verbose_name_plural = "Encadrants assignés"
     fields = ["coach", "status"]
-
-
-class MemberAdminForm(forms.ModelForm):
-    class Meta:
-        model = Member
-        fields = "__all__"
-        widgets = {
-            "qualifications": CheckboxSelectMultiple,
-        }
 
 
 ### Register files ###
