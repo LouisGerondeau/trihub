@@ -1,11 +1,13 @@
 {% extends "core/base.html" %}
-<h1>Inscription impossible</h1>
-<p>Session : {{ session.title_auto }}</p>
-{% if coach %}
-    <p>{{ coach }} n’est pas habilité à encadrer une séance de type « {{ session.category }} ».</p>
-    <p>Merci de contacter l’administrateur du club pour corriger cette situation.</p>
-    <a href="{{ origin }}">Retour</a>
-{% else %}
-    <p>Aucun coach sélectionné.</p>
-    <a href="{{ origin }}">Retour</a>
-{% endif %}
+{% block content %}
+    <h1>Inscription impossible</h1>
+    <p>Session : {{ session.title_auto }}</p>
+    {% if coach %}
+        <p>{{ coach }} n’est pas habilité à encadrer une séance de type « {{ session.category }} ».</p>
+        <p>Merci de contacter l’administrateur du club pour corriger cette situation.</p>
+        <a href="{{ origin }}">Retour</a>
+    {% else %}
+        <p>Aucun coach sélectionné.</p>
+        <a href="{{ origin }}">Retour</a>
+    {% endif %}
+{% endblock content %}
