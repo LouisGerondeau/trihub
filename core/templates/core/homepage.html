@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
 {% block content %}
-    <style>
+  <style>
 /* Carte séance */
 .maintitle {
   border: 1px solid #e961c7ff; border-radius: 8px; background-color: #ed488a6b;
@@ -10,16 +10,52 @@
 .categories{border: 1px solid #131213ff; border-radius: 8px; background-color: #cbc7ca47;
   padding: 12px 14px; margin: 10px 0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
-    </style>
-    <h1 class="maintitle">Séances par catégories</h1>
+
+.inputmember{border: 2px solid #131213ff;box-shadow: 0 1px 3px rgba(0,0,0,0.1);ont-weight: 600; font-size: 1rem;}
+  </style>
+  <h1 class="maintitle">Séances par catégories</h1>
+  <div class="categories"
+       href="{% url 'public_sessions_by_category' 'all' %}">
+    <a href="{% url 'public_sessions_by_category' 'all' %}">Toutes les séances</a>
+  </div>
+  {% for cat in cats %}
     <div class="categories"
-         href="{% url 'public_sessions_by_category' 'all' %}">
-        <a href="{% url 'public_sessions_by_category' 'all' %}">Toutes les séances</a>
+         href="{% url 'public_sessions_by_category' cat.code %}">
+      <a href="{% url 'public_sessions_by_category' cat.code %}">{{ cat.label }}</a>
     </div>
-    {% for cat in cats %}
-        <div class="categories"
-             href="{% url 'public_sessions_by_category' cat.code %}">
-            <a href="{% url 'public_sessions_by_category' cat.code %}">{{ cat.label }}</a>
-        </div>
-    {% endfor %}
+  {% endfor %}
+  <h1 class="maintitle">Séances par encadrant</h1>
+  <h2>Recherchez votre nom ci-dessous.</h2>
+  <input class="inputmember"
+         type="text"
+         id="memberSearch"
+         placeholder="Tapez un nom...">
+  <ul id="suggestions">
+  </ul>
+  <script>
+  const dictslug = {{ dictslug|safe }};
+  const searchInput = document.getElementById("memberSearch");
+  const suggestions = document.getElementById("suggestions");
+
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.toLowerCase();
+    suggestions.innerHTML = "";
+    if (!query) return;
+
+    const results = Object.keys(dictslug).filter(name =>
+      name.toLowerCase().includes(query)
+    );
+
+    results.slice(0, 10).forEach(name => {
+      const li = document.createElement("li");
+      li.textContent = name;
+      li.style.cursor = "pointer";
+      li.addEventListener("click", () => {
+        const slug = dictslug[name];
+        window.location.href = `/public/coach/${slug}/`;
+      });
+      suggestions.appendChild(li);
+    });
+  });
+  </script>
 {% endblock content %}

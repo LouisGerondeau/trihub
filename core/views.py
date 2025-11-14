@@ -16,11 +16,9 @@ from .models import Category, CoachAssignment, Location, Member, Session
 
 def public_homepage(request):
     cats = Category.objects.all()
-    return render(
-        request,
-        "core/homepage.html",
-        {"cats": cats},
-    )
+    ms = Member.objects.all()
+    dictslug = {str(m): m.slug for m in ms}
+    return render(request, "core/homepage.html", {"cats": cats, "dictslug": dictslug})
 
 
 def public_sessions_by_coach(request, coach_slug):
